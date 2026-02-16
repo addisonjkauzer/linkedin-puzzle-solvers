@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @AllArgsConstructor
 @Getter
@@ -26,6 +27,9 @@ public class ZipPuzzle {
     private final int maxNode;
 
     private final HashMap<Integer, Set<String>> cachedPaths = new HashMap<>();
+
+    private final AtomicInteger cacheHits = new AtomicInteger(0);
+    private final AtomicInteger cacheMisses = new AtomicInteger(0);
 
     private final static int[][] DIRECTIONS = new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
@@ -96,9 +100,11 @@ public class ZipPuzzle {
                 if (cachedPath.stream().anyMatch(seen::contains)) {
                     cachedPaths.remove(endNode);
                 } else {
+                    cacheHits.incrementAndGet();
                     continue;
                 }
             }
+            cacheMisses.incrementAndGet();
             final Future<Boolean> future = executor.submit(() -> pathExists(nodeLocation, endNode, new HashSet<>(seen), new HashSet<>()));
             futures.add(future);
         }

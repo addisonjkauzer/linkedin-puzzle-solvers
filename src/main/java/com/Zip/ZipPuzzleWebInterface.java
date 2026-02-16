@@ -70,6 +70,9 @@ public class ZipPuzzleWebInterface {
 
             // Run the DFS with the observable path so the browser mirrors every step
             puzzle.visualizeSolution(observablePath, multiThreaded);
+            if (multiThreaded) {
+                System.out.println("Cache hit: " + 100 * puzzle.getCacheHits().get() / (puzzle.getCacheMisses().get() + puzzle.getCacheHits().get()) + "%");
+            }
         });
     }
 
