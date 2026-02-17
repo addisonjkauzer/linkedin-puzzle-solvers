@@ -11,7 +11,7 @@ class ZipPuzzleE2ETest {
     private ZipPuzzleWebInterface zipPuzzleWebInterface;
 
     @Test
-    void solveAndSubmitZipPuzzle() {
+    void solvePuzzle() {
         zipPuzzleWebInterface.fetchAndSubmit();
     }
 
