@@ -40,8 +40,9 @@ public class SudokuPuzzle {
     }
 
     public void solve(Consumer<int[]> onCellVisited) {
-        boolean isSolved = true;
+        boolean isSolved;
         do {
+            isSolved = true;
             for (int row = 0; row < board.length; row++) {
                 for (int col = 0; col < board[row].length; col++) {
                     if (board[row][col] != 0) {
