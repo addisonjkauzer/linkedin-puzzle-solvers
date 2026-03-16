@@ -129,7 +129,7 @@ public class SudokuPuzzleWebInterface {
                 currentPos[0] = targetRow;
                 currentPos[1] = targetCol;
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

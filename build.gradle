@@ -34,6 +34,17 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+sourceSets {
+    test {
+        java {
+            srcDirs = ['tst/java']
+        }
+        resources {
+            srcDirs = ['tst/resources']
+        }
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
