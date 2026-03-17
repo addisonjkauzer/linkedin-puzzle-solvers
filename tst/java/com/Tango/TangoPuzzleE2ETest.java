@@ -17,6 +17,6 @@ class TangoPuzzleE2ETest {
 
     @Test
     void visualizeAlgorithm() {
-        tangoPuzzleWebInterface.visualizeAlgorithm();
+        tangoPuzzleWebInterface.visualizeAlgorithm(false);
     }
 }

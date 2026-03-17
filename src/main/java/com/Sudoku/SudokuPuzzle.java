@@ -1,5 +1,6 @@
 package com.Sudoku;
 
+import com.Utils.MetricsPublisher;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class SudokuPuzzle {
     }
 
     public void solve(Consumer<int[]> onCellVisited) {
+        final long start = System.currentTimeMillis();
         boolean isSolved;
         do {
             isSolved = true;
@@ -82,6 +84,7 @@ public class SudokuPuzzle {
                 }
             }
         } while (!isSolved);
+        MetricsPublisher.publishSolveTime("Sudoku", System.currentTimeMillis() - start);
     }
 
     private Set<Integer> updatePossibleValues(int row, int col) {

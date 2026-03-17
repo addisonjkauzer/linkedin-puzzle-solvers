@@ -16,6 +16,6 @@ class SudokuPuzzleE2ETest {
     }
     @Test
     void visualizeAlgorithm() {
-        sudokuPuzzleWebInterface.visualizeAlgorithm();
+        sudokuPuzzleWebInterface.visualizeAlgorithm(false);
     }
 }

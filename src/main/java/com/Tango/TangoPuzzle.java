@@ -1,12 +1,10 @@
 package com.Tango;
 
+import com.Utils.MetricsPublisher;
 import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 
 @Getter
@@ -57,6 +55,7 @@ public class TangoPuzzle {
     }
 
     public void solve(Consumer<int[]> onCellVisited) {
+        final long start = System.currentTimeMillis();
         boolean isSolved;
         do {
             isSolved = true;
@@ -159,6 +158,7 @@ public class TangoPuzzle {
                 }
             }
         } while (!isSolved);
+        MetricsPublisher.publishSolveTime("Tango", System.currentTimeMillis() - start);
     }
 
     private String constraintKey(int r1, int c1, int r2, int c2) {

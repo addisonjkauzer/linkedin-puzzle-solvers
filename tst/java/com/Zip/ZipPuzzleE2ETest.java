@@ -17,12 +17,12 @@ class ZipPuzzleE2ETest {
 
     @Test
     void visualizeAlgorithm() {
-        zipPuzzleWebInterface.visualizeAlgorithm(false);
+        zipPuzzleWebInterface.visualizeAlgorithm(false, false);
     }
 
     @Test
     void visualizeMultiThreadAlgorithm() {
-        zipPuzzleWebInterface.visualizeAlgorithm(true);
+        zipPuzzleWebInterface.visualizeAlgorithm(true, false);
     }
 
 }

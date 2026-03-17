@@ -1,5 +1,6 @@
 package com.Zip;
 
+import com.Utils.MetricsPublisher;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -38,13 +39,17 @@ public class ZipPuzzle {
     public List<Integer[]> getSolution() {
         final List<Integer[]> solution = new ArrayList<>();
         dfsFindPath(getStartLocation(), 1, new ArrayList<>(), new HashSet<>(), solution, true);
+        executor.shutdown();
         return solution;
     }
 
     public void visualizeSolution(final List<Integer[]> path,
                                   final boolean multiThreaded) {
+        final long start = System.currentTimeMillis();
         final List<Integer[]> solution = new ArrayList<>();
         dfsFindPath(getStartLocation(), 1, path, new HashSet<>(), solution, multiThreaded);
+        executor.shutdown();
+        MetricsPublisher.publishSolveTime("Zip", System.currentTimeMillis() - start);
     }
 
     private void dfsFindPath(final Integer[] currentLocation,

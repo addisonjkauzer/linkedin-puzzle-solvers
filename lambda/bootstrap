@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euo pipefail
+
+export JAVA_HOME=/usr/lib/jvm/java-25-amazon-corretto
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${JAVA_HOME}/bin:${PATH}
+
+# Lambda custom runtime polling loop
+while true; do
+    HEADERS_FILE=$(mktemp)
+
+    # Block until the next invocation arrives
+    EVENT_DATA=$(curl -sS -LD "$HEADERS_FILE" \
+        "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next")
+
+    REQUEST_ID=$(grep -Fi Lambda-Runtime-Aws-Request-Id "$HEADERS_FILE" \
+        | tr -d '[:space:]' | cut -d: -f2)
+
+    set +e
+    java -Dwebdriver.chrome.driver=/usr/bin/chromedriver \
+         -jar /app/app.jar 2>&1 | tee /tmp/test-output.txt
+    EXIT_CODE=$?
+    set -e
+
+    # Encode output as a JSON string safely
+    OUTPUT=$(tail -200 /tmp/test-output.txt)
+    ESCAPED=$(python3 -c "import json,sys; print(json.dumps(sys.stdin.read()))" <<< "$OUTPUT")
+
+    if [ $EXIT_CODE -eq 0 ]; then
+        RESPONSE="{\"status\":\"SUCCESS\",\"output\":${ESCAPED}}"
+    else
+        RESPONSE="{\"status\":\"FAILED\",\"output\":${ESCAPED}}"
+    fi
+
+    curl -sS -X POST \
+        "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQUEST_ID/response" \
+        -H "Content-Type: application/json" \
+        -d "$RESPONSE"
+done

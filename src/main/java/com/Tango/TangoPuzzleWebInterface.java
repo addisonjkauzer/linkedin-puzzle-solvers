@@ -1,31 +1,40 @@
 package com.Tango;
 
 import com.Utils.PuzzleType;
+import com.Utils.PuzzleWebInterface;
 import lombok.AllArgsConstructor;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
-import java.util.function.BiConsumer;
 
 @Component
 @AllArgsConstructor
-public class TangoPuzzleWebInterface {
-
-    private static final String URL = PuzzleType.TANGO.getUrl();
+public class TangoPuzzleWebInterface extends PuzzleWebInterface<TangoPuzzle> {
 
     private final TangoPuzzleParser tangoPuzzleParser;
 
+    @Override
+    protected PuzzleType getPuzzleType() { return PuzzleType.TANGO; }
+
+    @Override
+    protected String getBoardSelector() { return ".lotka-grid"; }
+
+    @Override
+    protected TangoPuzzle parsePuzzle(String html) {
+        return tangoPuzzleParser.parse(html);
+    }
+
+    @Override
+    protected void setupAfterParse(Actions actions) {
+        // Press Tab then Enter twice to get past the landing page and start the puzzle
+        actions.sendKeys(Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB).perform();
+        actions.sendKeys(Keys.ENTER).perform();
+        actions.sendKeys(Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB).perform();
+        actions.sendKeys(Keys.ENTER).perform();
+    }
+
     public void fetchAndSubmit() {
-        withPuzzle((puzzle, actions) -> {
+        withPuzzle((puzzle, actions, driver, recorder) -> {
             int rows = puzzle.getBoard().length;
             int cols = puzzle.getBoard()[0].length;
 
@@ -52,8 +61,8 @@ public class TangoPuzzleWebInterface {
         });
     }
 
-    public void visualizeAlgorithm() {
-        withPuzzle((puzzle, actions) -> {
+    public void visualizeAlgorithm(boolean record) {
+        withPuzzle((puzzle, actions, driver, recorder) -> {
             final int[] currentPos = {0, 0};
             puzzle.solve(cell -> {
                 int targetRow = cell[0];
@@ -66,28 +75,14 @@ public class TangoPuzzleWebInterface {
                 }
                 currentPos[0] = targetRow;
                 currentPos[1] = targetCol;
+                if (recorder != null) recorder.captureFrame();
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             });
-        });
-    }
-
-    private void navigateTo(Actions actions, int[] currentPos, int targetRow, int targetCol) {
-        int rowDiff = targetRow - currentPos[0];
-        int colDiff = targetCol - currentPos[1];
-
-        Keys verticalKey = rowDiff > 0 ? Keys.ARROW_DOWN : Keys.ARROW_UP;
-        for (int i = 0; i < Math.abs(rowDiff); i++) {
-            actions.sendKeys(verticalKey).perform();
-        }
-
-        Keys horizontalKey = colDiff > 0 ? Keys.ARROW_RIGHT : Keys.ARROW_LEFT;
-        for (int i = 0; i < Math.abs(colDiff); i++) {
-            actions.sendKeys(horizontalKey).perform();
-        }
+        }, record);
     }
 
     private void pressEnter(Actions actions, int value) {
@@ -96,44 +91,6 @@ public class TangoPuzzleWebInterface {
         int presses = value == TangoPuzzle.SUN ? 1 : 2;
         for (int i = 0; i < presses; i++) {
             actions.sendKeys(Keys.ENTER).perform();
-        }
-    }
-
-    public void withPuzzle(BiConsumer<TangoPuzzle, Actions> task) {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--no-sandbox", "--start-maximized");
-        WebDriver driver = new ChromeDriver(options);
-        try {
-            driver.get(URL);
-
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(100));
-
-            // Switch into the game iframe
-            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(
-                    By.cssSelector("iframe.game-launch-page__iframe")));
-
-            // Wait for the tango board to render
-            WebElement board = wait.until(
-                    ExpectedConditions.presenceOfElementLocated(By.cssSelector(".lotka-grid")));
-
-            // Parse the puzzle from the live board
-            String html = board.getAttribute("outerHTML");
-            TangoPuzzle puzzle = tangoPuzzleParser.parse(html);
-
-            // Press Tab then Enter to get past the landing page and start the puzzle
-            Actions actions = new Actions(driver);
-            actions.sendKeys(Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB).perform();
-            actions.sendKeys(Keys.ENTER).perform();
-            actions.sendKeys(Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB).perform();
-            actions.sendKeys(Keys.ENTER).perform();
-
-            task.accept(puzzle, actions);
-
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } finally {
-            driver.quit();
         }
     }
 }
