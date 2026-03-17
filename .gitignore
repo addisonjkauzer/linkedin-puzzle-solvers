@@ -38,3 +38,10 @@ out/
 
 ### Claude ###
 .claude/
+
+### Secrets ###
+.env
+*.env
+secrets.*
+*.pem
+*.key
