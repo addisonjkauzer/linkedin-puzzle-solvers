@@ -23,6 +23,12 @@ A grid puzzle where each cell must be filled with a sun or moon, subject to row/
 - **`fetchAndSubmit()`** - Solves the puzzle and fills in only the empty cells.
 - **`visualizeAlgorithm()`** - Navigates cell-by-cell as the solver iterates, filling in values as they are determined.
 
+### Queens
+A placement puzzle where exactly one queen must be placed in each row, column, and color region, with no two queens touching (including diagonally). Solved with depth-first search and color-region pruning that detects when any region has been fully blocked off.
+
+- **`fetchAndSubmit()`** - Solves the puzzle and places all queens.
+- **`visualizeAlgorithm()`** - Places and removes queens live in the browser as the DFS explores and backtracks.
+
 ## Prerequisites
 
 - **Java 25**
@@ -45,6 +51,10 @@ Tests are the primary entry point. Each E2E test opens Chrome, navigates to the 
 # Tango
 ./gradlew test --tests "com.Tango.TangoPuzzleE2ETest.solvePuzzle"
 ./gradlew test --tests "com.Tango.TangoPuzzleE2ETest.visualizeAlgorithm"
+
+# Queens
+./gradlew test --tests "com.Queens.QueensPuzzleE2ETest.solvePuzzle"
+./gradlew test --tests "com.Queens.QueensPuzzleE2ETest.visualizeAlgorithm"
 ```
 
 ## How It Works
@@ -58,7 +68,7 @@ In visualization mode, the solver and the browser are coupled — the algorithm 
 
 ## Lambda Deployment
 
-The project can be deployed as an AWS Lambda function that runs all three visualizations on a schedule and uploads recordings to S3.
+The project can be deployed as an AWS Lambda function that runs all four visualizations on a schedule and uploads recordings to S3.
 
 - Recordings are captured with **jcodec** and uploaded to the bucket specified by the `RECORDINGS_BUCKET` environment variable.
 - The Lambda is packaged as a Docker container using a custom runtime (`lambda/bootstrap`).

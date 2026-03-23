@@ -34,7 +34,7 @@ public class ZipPuzzle {
 
     private final static int[][] DIRECTIONS = new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
-    private final static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public List<Integer[]> getSolution() {
         final List<Integer[]> solution = new ArrayList<>();
@@ -45,11 +45,14 @@ public class ZipPuzzle {
 
     public void visualizeSolution(final List<Integer[]> path,
                                   final boolean multiThreaded) {
-        final long start = System.currentTimeMillis();
-        final List<Integer[]> solution = new ArrayList<>();
-        dfsFindPath(getStartLocation(), 1, path, new HashSet<>(), solution, multiThreaded);
-        executor.shutdown();
-        MetricsPublisher.publishSolveTime("Zip", System.currentTimeMillis() - start);
+        try {
+            final long start = System.currentTimeMillis();
+            final List<Integer[]> solution = new ArrayList<>();
+            dfsFindPath(getStartLocation(), 1, path, new HashSet<>(), solution, multiThreaded);
+            MetricsPublisher.publishSolveTime("Zip", System.currentTimeMillis() - start);
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     private void dfsFindPath(final Integer[] currentLocation,
@@ -90,6 +93,7 @@ public class ZipPuzzle {
             }
             dfsFindPath(newLocation, nextNode, path, seen, solution, multiThreaded);
         }
+        if (!solution.isEmpty()) return;
         seen.remove(seenKey);
         path.removeLast();
     }

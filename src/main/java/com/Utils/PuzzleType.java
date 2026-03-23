@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum PuzzleType {
     ZIP("https://www.linkedin.com/games/zip/"),
     SUDOKU("https://www.linkedin.com/games/mini-sudoku/"),
-    TANGO("https://www.linkedin.com/games/tango");
+    TANGO("https://www.linkedin.com/games/tango"),
+    QUEENS("https://www.linkedin.com/games/queens");
 
     private final String url;
 }
