@@ -12,8 +12,7 @@ public class PinpointPuzzle {
     private final ClaudeClient claude;
 
     public PinpointPuzzle(List<String> clues) {
-        // For local testing via E2E test add your claude API key here
-        this.claude = new ClaudeClient();
+        this.claude = new ClaudeClient(); // For local testing via E2E test add your claude API key here
         this.clues = clues;
     }
 
