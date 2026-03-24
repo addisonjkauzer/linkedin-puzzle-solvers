@@ -1,5 +1,6 @@
 package com.Pinpoint;
 
+import com.Utils.MetricsPublisher;
 import com.Utils.PuzzleType;
 import com.Utils.PuzzleWebInterface;
 import lombok.AllArgsConstructor;
@@ -47,16 +48,19 @@ public class PinpointPuzzleWebInterface extends PuzzleWebInterface<PinpointPuzzl
     public void visualizeAlgorithm(boolean record) {
         withPuzzle((puzzle, actions, driver, recorder) -> {
             if (recorder != null) recorder.captureFramesFor(5000);
+            int guessCount = 0;
             while (!isSolved(driver)) {
                 PinpointPuzzle current = reParse(driver);
                 String answer = current.solve();
                 String boardBefore = driver.findElement(By.cssSelector(getBoardSelector())).getAttribute("outerHTML");
                 typeAnswer(actions, answer);
+                guessCount++;
                 if (recorder != null) recorder.captureFramesFor(5000);
                 new WebDriverWait(driver, Duration.ofSeconds(10)).until(d ->
                         isSolved(d) || !d.findElement(By.cssSelector(getBoardSelector())).getAttribute("outerHTML").equals(boardBefore)
                 );
             }
+            MetricsPublisher.publishGuessCount("Pinpoint", guessCount);
             if (recorder == null) {
                 try {
                     Thread.sleep(5000);
