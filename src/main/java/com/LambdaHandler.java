@@ -1,5 +1,7 @@
 package com;
 
+import com.Pinpoint.PinpointPuzzleParser;
+import com.Pinpoint.PinpointPuzzleWebInterface;
 import com.Queens.QueensPuzzleParser;
 import com.Queens.QueensPuzzleWebInterface;
 import com.Sudoku.SudokuPuzzleParser;
@@ -16,5 +18,6 @@ public class LambdaHandler {
         new SudokuPuzzleWebInterface(new SudokuPuzzleParser()).visualizeAlgorithm(true);
         new TangoPuzzleWebInterface(new TangoPuzzleParser()).visualizeAlgorithm(true);
         new QueensPuzzleWebInterface(new QueensPuzzleParser()).visualizeAlgorithm(true);
+        new PinpointPuzzleWebInterface(new PinpointPuzzleParser()).visualizeAlgorithm(true);
     }
 }

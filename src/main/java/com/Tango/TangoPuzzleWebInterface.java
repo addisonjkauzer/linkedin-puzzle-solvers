@@ -75,13 +75,23 @@ public class TangoPuzzleWebInterface extends PuzzleWebInterface<TangoPuzzle> {
                 }
                 currentPos[0] = targetRow;
                 currentPos[1] = targetCol;
-                if (recorder != null) recorder.captureFrame();
+                if (recorder != null) {
+                    recorder.captureFrame();
+                } else {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            if (recorder == null) {
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            });
+            }
         }, record);
     }
 

@@ -29,6 +29,11 @@ A placement puzzle where exactly one queen must be placed in each row, column, a
 - **`fetchAndSubmit()`** - Solves the puzzle and places all queens.
 - **`visualizeAlgorithm()`** - Places and removes queens live in the browser as the DFS explores and backtracks.
 
+### Pinpoint
+A word association puzzle where five clues are revealed one at a time, and you must guess the single category word that connects them. Solved by sending the visible clues to Claude and asking it to identify the connecting word.
+
+- **`visualizeAlgorithm()`** - Submits guesses in the browser as each round of clues is revealed, until the category is found.
+
 ## Prerequisites
 
 - **Java 25**
@@ -55,6 +60,9 @@ Tests are the primary entry point. Each E2E test opens Chrome, navigates to the 
 # Queens
 ./gradlew test --tests "com.Queens.QueensPuzzleE2ETest.solvePuzzle"
 ./gradlew test --tests "com.Queens.QueensPuzzleE2ETest.visualizeAlgorithm"
+
+# Pinpoint
+./gradlew test --tests "com.Pinpoint.PinpointPuzzleE2ETest.visualizeAlgorithm"
 ```
 
 ## How It Works
@@ -68,7 +76,7 @@ In visualization mode, the solver and the browser are coupled — the algorithm 
 
 ## Lambda Deployment
 
-The project can be deployed as an AWS Lambda function that runs all four visualizations on a schedule and uploads recordings to S3.
+The project can be deployed as an AWS Lambda function that runs all five visualizations on a schedule and uploads recordings to S3.
 
 - Recordings are captured with **jcodec** and uploaded to the bucket specified by the `RECORDINGS_BUCKET` environment variable.
 - The Lambda is packaged as a Docker container using a custom runtime (`lambda/bootstrap`).

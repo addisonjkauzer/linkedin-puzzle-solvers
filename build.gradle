@@ -25,6 +25,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.anthropic:anthropic-java:2.16.1'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.jsoup:jsoup:1.22.1'
     implementation 'org.seleniumhq.selenium:selenium-java:4.29.0'
