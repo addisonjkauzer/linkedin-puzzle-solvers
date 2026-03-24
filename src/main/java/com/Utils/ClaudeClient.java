@@ -5,6 +5,8 @@ import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.Model;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 
 public class ClaudeClient {
 
@@ -13,7 +15,17 @@ public class ClaudeClient {
     private final AnthropicClient client;
 
     public ClaudeClient() {
-        this.client = AnthropicOkHttpClient.fromEnv();
+        String paramName = System.getenv("ANTHROPIC_API_KEY_PARAM");
+        String apiKey = SsmClient.create()
+                .getParameter(GetParameterRequest.builder()
+                        .name(paramName)
+                        .withDecryption(true)
+                        .build())
+                .parameter()
+                .value();
+        this.client = AnthropicOkHttpClient.builder()
+                .apiKey(apiKey)
+                .build();
     }
 
     public ClaudeClient(String apiKey) {

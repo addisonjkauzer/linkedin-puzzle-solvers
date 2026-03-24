@@ -44,7 +44,7 @@ public class ScreenRecorder {
         frames.add(((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES));
     }
 
-    private void captureFramesFor(int millis) {
+    public void captureFramesFor(int millis) {
         long end = System.currentTimeMillis() + millis;
         while (System.currentTimeMillis() < end) {
             captureFrame();

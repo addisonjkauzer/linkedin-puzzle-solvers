@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.seleniumhq.selenium:selenium-java:4.29.0'
     implementation 'software.amazon.awssdk:cloudwatch:2.30.5'
     implementation 'software.amazon.awssdk:s3:2.30.5'
+    implementation 'software.amazon.awssdk:ssm:2.30.5'
     implementation 'org.jcodec:jcodec-javase:0.2.5'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

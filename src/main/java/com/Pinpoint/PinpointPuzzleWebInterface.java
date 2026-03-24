@@ -46,12 +46,13 @@ public class PinpointPuzzleWebInterface extends PuzzleWebInterface<PinpointPuzzl
 
     public void visualizeAlgorithm(boolean record) {
         withPuzzle((puzzle, actions, driver, recorder) -> {
+            if (recorder != null) recorder.captureFramesFor(5000);
             while (!isSolved(driver)) {
                 PinpointPuzzle current = reParse(driver);
-                if (recorder != null) recorder.captureFrame();
                 String answer = current.solve();
                 String boardBefore = driver.findElement(By.cssSelector(getBoardSelector())).getAttribute("outerHTML");
                 typeAnswer(actions, answer);
+                if (recorder != null) recorder.captureFramesFor(5000);
                 new WebDriverWait(driver, Duration.ofSeconds(10)).until(d ->
                         isSolved(d) || !d.findElement(By.cssSelector(getBoardSelector())).getAttribute("outerHTML").equals(boardBefore)
                 );

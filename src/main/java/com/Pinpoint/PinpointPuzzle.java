@@ -18,7 +18,9 @@ public class PinpointPuzzle {
     }
 
     public String solve() {
-        return claude.ask("Given these clues: " + String.join(", ", clues) + " — what single word connects them?");
+        return claude.ask("You are playing LinkedIn's Pinpoint puzzle. Each clue is a word that belongs to a " +
+                "hidden category. Given these clues: " + String.join(", ", clues) + " — respond with only " +
+                "the single category word. No explanation.");
 
     }
 }
