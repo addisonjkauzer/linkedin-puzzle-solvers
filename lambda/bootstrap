@@ -17,6 +17,7 @@ while true; do
 
     set +e
     java -Dwebdriver.chrome.driver=/usr/bin/chromedriver \
+         -DLAMBDA_EVENT="$EVENT_DATA" \
          -jar /app/app.jar 2>&1 | tee /tmp/test-output.txt
     EXIT_CODE=$?
     set -e

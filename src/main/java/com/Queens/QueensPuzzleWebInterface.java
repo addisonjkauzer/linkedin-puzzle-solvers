@@ -86,11 +86,14 @@ public class QueensPuzzleWebInterface extends PuzzleWebInterface<QueensPuzzle> {
                 }
                 currentPos[0] = targetRow;
                 currentPos[1] = targetCol;
-                if (recorder != null) recorder.captureFrame();
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                if (recorder != null) {
+                    recorder.captureFrame();
+                } else {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
             if (recorder == null) {

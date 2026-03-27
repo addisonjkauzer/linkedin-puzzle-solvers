@@ -4,6 +4,7 @@ import org.jcodec.api.awt.AWTSequenceEncoder;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -41,7 +42,11 @@ public class ScreenRecorder {
     }
 
     public void captureFrame() {
-        frames.add(((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES));
+        try {
+            frames.add(((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES));
+        } catch (WebDriverException e) {
+            // Session may have expired; skip this frame
+        }
     }
 
     public void captureFramesFor(int millis) {
@@ -58,15 +63,23 @@ public class ScreenRecorder {
     }
 
     public void stopAndUpload() {
-        captureFramesFor(5000);
+        try {
+            captureFramesFor(5000);
+        } catch (Exception e) {
+            System.err.println("Stopped capturing early for " + puzzleType + ": " + e.getMessage());
+        }
         try {
             AWTSequenceEncoder encoder = AWTSequenceEncoder.createSequenceEncoder(outputFile.toFile(), 20);
             for (byte[] pngBytes : frames) {
-                BufferedImage img = ImageIO.read(new ByteArrayInputStream(pngBytes));
-                if (img != null) {
-                    int w = img.getWidth() & ~1;
-                    int h = img.getHeight() & ~1;
-                    encoder.encodeImage(img.getSubimage(0, 0, w, h));
+                try {
+                    BufferedImage img = ImageIO.read(new ByteArrayInputStream(pngBytes));
+                    if (img != null) {
+                        int w = img.getWidth() & ~1;
+                        int h = img.getHeight() & ~1;
+                        encoder.encodeImage(img.getSubimage(0, 0, w, h));
+                    }
+                } catch (Exception e) {
+                    // Skip corrupted frame
                 }
             }
             encoder.finish();

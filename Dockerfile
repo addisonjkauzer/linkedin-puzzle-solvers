@@ -44,10 +44,11 @@ RUN dnf install -y \
 
 # Install Google Chrome stable and matching ChromeDriver
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm \
-    && rpm -ivh --nodeps google-chrome-stable_current_x86_64.rpm \
+    && rpm -ivh --nodeps --noscripts google-chrome-stable_current_x86_64.rpm \
     && rm -f google-chrome-stable_current_x86_64.rpm \
-    && CHROMEDRIVER_URL=$(curl -s https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json \
-        | python3 -c "import json,sys; d=json.load(sys.stdin); print(next(x['url'] for x in d['channels']['Stable']['downloads']['chromedriver'] if x['platform']=='linux64'))") \
+    && CHROME_MAJOR=$(rpm -q google-chrome-stable --queryformat '%{VERSION}' | grep -oP '^\d+') \
+    && CHROMEDRIVER_URL=$(curl -s https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json \
+        | python3 -c "import json,sys; major=sys.argv[1]; data=json.load(sys.stdin); versions=sorted([v for v in data['versions'] if v['version'].startswith(major+'.')], key=lambda v: list(map(int,v['version'].split('.')))); [print(d['url']) or sys.exit(0) for v in reversed(versions) for d in v.get('downloads',{}).get('chromedriver',[]) if d['platform']=='linux64']" "$CHROME_MAJOR") \
     && wget -q "$CHROMEDRIVER_URL" -O /tmp/chromedriver.zip \
     && unzip /tmp/chromedriver.zip -d /tmp/ \
     && mv /tmp/chromedriver-linux64/chromedriver /usr/bin/chromedriver \

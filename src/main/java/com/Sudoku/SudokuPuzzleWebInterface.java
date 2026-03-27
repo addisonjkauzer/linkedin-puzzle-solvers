@@ -80,11 +80,14 @@ public class SudokuPuzzleWebInterface extends PuzzleWebInterface<SudokuPuzzle> {
 
                 currentPos[0] = targetRow;
                 currentPos[1] = targetCol;
-                if (recorder != null) recorder.captureFrame();
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                if (recorder != null) {
+                    recorder.captureFrame();
+                } else {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         }, record);
