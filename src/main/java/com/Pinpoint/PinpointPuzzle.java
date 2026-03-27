@@ -21,10 +21,12 @@ public class PinpointPuzzle {
     }
 
     public String solve() {
-        final String guess = claude.ask("You are playing LinkedIn's Pinpoint puzzle. Each clue is a word that belongs to a " +
-                "hidden category. It's possible that the clues are a prefix or suffix to the category word. Given " +
-                "these clues: " + String.join(", ", clues) + " — respond with only " +
-                "the single category word. No explanation. Do not guess these words: " + alreadyGuessed);
+        final String guess = claude.ask("You are playing LinkedIn's Pinpoint puzzle. Each clue is a word " +
+                "that belongs to a hidden category." +
+                "\n * The category can be a word that can precede or follow every clue word. " +
+                "\n * These are the current clues: " + String.join(", ", clues) +
+                "\n * Respond with only a single category word. No explanation. " +
+                "\n * Do not guess these words: " + alreadyGuessed + ", " + String.join(", ", clues));
         alreadyGuessed.add(guess);
         return guess;
     }
