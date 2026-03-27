@@ -21,7 +21,7 @@ class ZipPuzzleE2ETest {
     }
 
     @Test
-    void visualizeMultiThreadAlgorithm() {
+    void visualizeOptimizedAlgorithm() {
         zipPuzzleWebInterface.visualizeAlgorithm(true, false);
     }
 

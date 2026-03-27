@@ -47,7 +47,7 @@ public class ZipPuzzleWebInterface extends PuzzleWebInterface<ZipPuzzle> {
         });
     }
 
-    public void visualizeAlgorithm(boolean multiThreaded, boolean record) {
+    public void visualizeAlgorithm(boolean enableOptimizations, boolean record) {
         withPuzzle((puzzle, actions, driver, recorder) -> {
             // Observable path that sends arrow keys on add and reverse arrow keys on removeLast
             List<Integer[]> observablePath = new ArrayList<>() {
@@ -78,7 +78,14 @@ public class ZipPuzzleWebInterface extends PuzzleWebInterface<ZipPuzzle> {
                 }
             };
 
-            puzzle.visualizeSolution(observablePath, multiThreaded);
+            puzzle.visualizeSolution(observablePath, enableOptimizations);
+            if (recorder == null) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }, record);
     }
 }

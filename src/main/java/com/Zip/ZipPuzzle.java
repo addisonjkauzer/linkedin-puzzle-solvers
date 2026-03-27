@@ -7,7 +7,9 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -44,11 +46,11 @@ public class ZipPuzzle {
     }
 
     public void visualizeSolution(final List<Integer[]> path,
-                                  final boolean multiThreaded) {
+                                  final boolean enableOptimizations) {
         try {
             final long start = System.currentTimeMillis();
             final List<Integer[]> solution = new ArrayList<>();
-            dfsFindPath(getStartLocation(), 1, path, new HashSet<>(), solution, multiThreaded);
+            dfsFindPath(getStartLocation(), 1, path, new HashSet<>(), solution, enableOptimizations);
             MetricsPublisher.publishSolveTime("Zip", System.currentTimeMillis() - start);
         } finally {
             executor.shutdownNow();
@@ -60,7 +62,7 @@ public class ZipPuzzle {
                             final List<Integer[]> path,
                             final Set<String> seen,
                             final List<Integer[]> solution,
-                            final boolean multiThreaded) {
+                            final boolean enableOptimizations) {
         if (!solution.isEmpty()) {
             return;
         }
@@ -80,7 +82,7 @@ public class ZipPuzzle {
         if (board[row][col] == nextNode) {
             nextNode++;
         }
-        if (multiThreaded && !allNodesConnectable(nextNode, seen)) {
+        if (enableOptimizations && (!allNodesConnectable(nextNode, seen) || numBlankIslands(seen) > 1)) {
             return;
         }
         path.add(new Integer[]{row, col});
@@ -91,7 +93,7 @@ public class ZipPuzzle {
             if (bannedMoves.getOrDefault(seenKey, new HashSet<>()).contains(newLocationKey)) {
                 continue;
             }
-            dfsFindPath(newLocation, nextNode, path, seen, solution, multiThreaded);
+            dfsFindPath(newLocation, nextNode, path, seen, solution, enableOptimizations);
         }
         if (!solution.isEmpty()) return;
         seen.remove(seenKey);
@@ -128,6 +130,37 @@ public class ZipPuzzle {
             throw new RuntimeException("Multithreading error");
         }
         return true;
+    }
+
+    private int numBlankIslands(final Set<String> currentPath) {
+        boolean[][] seen = new boolean[board.length][board[0].length];
+        int numIslands = 0;
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
+                int value = board[row][col];
+                if (value == 0 && !seen[row][col] && !currentPath.contains(row + "," + col)) {
+                    final Queue<Integer[]> bfsQueue = new LinkedList<>();
+                    bfsQueue.add(new Integer[]{row, col});
+                    while (!bfsQueue.isEmpty()) {
+                        final Integer[] current = bfsQueue.poll();
+                        seen[current[0]][current[1]] = true;
+                        for (int[] direction : DIRECTIONS) {
+                            int newRow = current[0] + direction[0];
+                            int newCol = current[1] + direction[1];
+                            if (newRow < 0 || newRow >= board.length || newCol < 0 || newCol >= board[0].length) {
+                                continue;
+                            }
+                            int newValue = board[newRow][newCol];
+                            if (newValue == 0 && !seen[newRow][newCol] && !currentPath.contains(newRow + "," + newCol)) {
+                                bfsQueue.add(new Integer[]{newRow, newCol});
+                            }
+                        }
+                    }
+                    numIslands++;
+                }
+            }
+        }
+        return numIslands;
     }
 
     private boolean pathExists(final Integer[] currentLocation,

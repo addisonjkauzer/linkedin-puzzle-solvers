@@ -96,6 +96,32 @@ public class QueensPuzzle {
     }
 
     private boolean shouldPrune() {
+        for (int row = 0; row < rows; row++) {
+            boolean allCellsBlocked = true;
+            for (int col = 0; col < cols; col++) {
+                final List<Integer> key = Arrays.asList(row, col);
+                if (!unavailableMap.containsKey(key) || solution[row][col] == 1) {
+                    allCellsBlocked = false;
+                    break;
+                }
+            }
+            if (allCellsBlocked) {
+                return true;
+            }
+        }
+        for (int col = 0; col < cols; col++) {
+            boolean allCellsBlocked = true;
+            for (int row = 0; row < rows; row++) {
+                final List<Integer> key = Arrays.asList(row, col);
+                if (!unavailableMap.containsKey(key) || solution[row][col] == 1) {
+                    allCellsBlocked = false;
+                    break;
+                }
+            }
+            if (allCellsBlocked) {
+                return true;
+            }
+        }
         for (Set<Integer[]> cellsPerColor : colorToCells.values()) {
             boolean allCellsBlocked = true;
             for (Integer[] cell : cellsPerColor) {
