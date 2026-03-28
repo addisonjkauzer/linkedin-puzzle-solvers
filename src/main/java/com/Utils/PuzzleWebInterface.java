@@ -72,8 +72,9 @@ public abstract class PuzzleWebInterface<P> {
             }
             MetadataWriter.appendEntry(getPuzzleType().name(), solveTimeMs, lastGuessCount);
         } finally {
-            if (recorder != null) recorder.stopAndUpload();
+            if (recorder != null) recorder.finalizeCapture();
             driver.quit();
+            if (recorder != null) recorder.stopAndUpload();
         }
     }
 

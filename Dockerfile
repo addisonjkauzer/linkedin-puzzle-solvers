@@ -40,7 +40,8 @@ RUN dnf install -y \
     nss \
     nspr \
     pango \
-    libXt
+    libXt \
+    ffmpeg
 
 # Install Google Chrome stable and matching ChromeDriver
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm \

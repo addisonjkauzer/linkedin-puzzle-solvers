@@ -22,7 +22,7 @@ class ZipPuzzleE2ETest {
 
     @Test
     void visualizeOptimizedAlgorithm() {
-        zipPuzzleWebInterface.visualizeAlgorithm(true, false);
+        zipPuzzleWebInterface.visualizeAlgorithm(true, true);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.Utils;
 
-import org.jcodec.api.awt.AWTSequenceEncoder;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -8,16 +7,12 @@ import org.openqa.selenium.WebDriverException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ScreenRecorder {
 
@@ -27,12 +22,26 @@ public class ScreenRecorder {
     private final String puzzleType;
     private final Path outputFile;
     private final WebDriver driver;
-    private final List<byte[]> frames = new ArrayList<>();
+    private final Process ffmpeg;
+    private final OutputStream ffmpegIn;
 
     private ScreenRecorder(String puzzleType, WebDriver driver) throws IOException {
         this.puzzleType = puzzleType;
         this.driver = driver;
         this.outputFile = Files.createTempFile("recording-" + puzzleType + "-", ".mp4");
+
+        this.ffmpeg = new ProcessBuilder(
+                "ffmpeg", "-y",
+                "-f", "image2pipe", "-vcodec", "png", "-r", "20",
+                "-i", "pipe:0",
+                "-vcodec", "libx264", "-pix_fmt", "yuv420p",
+                "-preset", "ultrafast",
+                outputFile.toString()
+        ).redirectError(ProcessBuilder.Redirect.DISCARD)
+         .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+         .start();
+
+        this.ffmpegIn = ffmpeg.getOutputStream();
     }
 
     public static ScreenRecorder start(String puzzleType, WebDriver driver) throws IOException {
@@ -43,9 +52,13 @@ public class ScreenRecorder {
 
     public void captureFrame() {
         try {
-            frames.add(((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES));
+            byte[] png = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+            ffmpegIn.write(png);
+            ffmpegIn.flush();
         } catch (WebDriverException e) {
             // Session may have expired; skip this frame
+        } catch (IOException e) {
+            // ffmpeg pipe closed; skip
         }
     }
 
@@ -62,28 +75,22 @@ public class ScreenRecorder {
         }
     }
 
-    public void stopAndUpload() {
+    public void finalizeCapture() {
         try {
             captureFramesFor(5000);
         } catch (Exception e) {
             System.err.println("Stopped capturing early for " + puzzleType + ": " + e.getMessage());
         }
-        try {
-            AWTSequenceEncoder encoder = AWTSequenceEncoder.createSequenceEncoder(outputFile.toFile(), 20);
-            for (byte[] pngBytes : frames) {
-                try {
-                    BufferedImage img = ImageIO.read(new ByteArrayInputStream(pngBytes));
-                    if (img != null) {
-                        int w = img.getWidth() & ~1;
-                        int h = img.getHeight() & ~1;
-                        encoder.encodeImage(img.getSubimage(0, 0, w, h));
-                    }
-                } catch (Exception e) {
-                    // Skip corrupted frame
-                }
-            }
-            encoder.finish();
+    }
 
+    public void stopAndUpload() {
+        try {
+            ffmpegIn.close();
+            ffmpeg.waitFor();
+        } catch (Exception e) {
+            System.err.println("Failed to finalize ffmpeg for " + puzzleType + ": " + e.getMessage());
+        }
+        try {
             String key = "recordings/" + puzzleType.toLowerCase() + "/" + LocalDate.now(ZoneId.of("America/Los_Angeles")) + ".mp4";
             s3Client.putObject(
                     PutObjectRequest.builder()
@@ -95,7 +102,7 @@ public class ScreenRecorder {
             );
             System.out.println("Recording uploaded to s3://" + BUCKET + "/" + key);
         } catch (Exception e) {
-            System.err.println("Failed to stop/upload recording for " + puzzleType + ": " + e.getMessage());
+            System.err.println("Failed to upload recording for " + puzzleType + ": " + e.getMessage());
         } finally {
             try {
                 Files.deleteIfExists(outputFile);
