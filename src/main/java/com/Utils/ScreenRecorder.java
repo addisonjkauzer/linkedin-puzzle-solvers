@@ -89,6 +89,7 @@ public class ScreenRecorder {
                     PutObjectRequest.builder()
                             .bucket(BUCKET)
                             .key(key)
+                            .contentType("video/mp4")
                             .build(),
                     outputFile
             );

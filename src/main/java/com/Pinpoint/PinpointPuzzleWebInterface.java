@@ -1,6 +1,5 @@
 package com.Pinpoint;
 
-import com.Utils.MetricsPublisher;
 import com.Utils.PuzzleType;
 import com.Utils.PuzzleWebInterface;
 import lombok.AllArgsConstructor;
@@ -60,7 +59,7 @@ public class PinpointPuzzleWebInterface extends PuzzleWebInterface<PinpointPuzzl
                         isSolved(d) || !d.findElement(By.cssSelector(getBoardSelector())).getAttribute("outerHTML").equals(boardBefore)
                 );
             }
-            MetricsPublisher.publishGuessCount("Pinpoint", guessCount);
+            this.lastGuessCount = guessCount;
             if (recorder == null) {
                 try {
                     Thread.sleep(5000);

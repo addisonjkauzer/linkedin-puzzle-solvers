@@ -82,7 +82,7 @@ public class ZipPuzzle {
         if (board[row][col] == nextNode) {
             nextNode++;
         }
-        if (enableOptimizations && (!allNodesConnectable(nextNode, seen) || numBlankIslands(seen) > 1)) {
+        if (enableOptimizations && (!allNodesConnectable(nextNode, seen) || numBlankIslands(seen, nextNode) > 1)) {
             return;
         }
         path.add(new Integer[]{row, col});
@@ -132,13 +132,13 @@ public class ZipPuzzle {
         return true;
     }
 
-    private int numBlankIslands(final Set<String> currentPath) {
+    private int numBlankIslands(final Set<String> currentPath, int nextNode) {
         boolean[][] seen = new boolean[board.length][board[0].length];
         int numIslands = 0;
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
                 int value = board[row][col];
-                if (value == 0 && !seen[row][col] && !currentPath.contains(row + "," + col)) {
+                if ((value == 0 || value >= nextNode) && !seen[row][col] && !currentPath.contains(row + "," + col)) {
                     final Queue<Integer[]> bfsQueue = new LinkedList<>();
                     bfsQueue.add(new Integer[]{row, col});
                     while (!bfsQueue.isEmpty()) {
@@ -151,7 +151,7 @@ public class ZipPuzzle {
                                 continue;
                             }
                             int newValue = board[newRow][newCol];
-                            if (newValue == 0 && !seen[newRow][newCol] && !currentPath.contains(newRow + "," + newCol)) {
+                            if ((value == 0 || value >= nextNode) && !seen[newRow][newCol] && !currentPath.contains(newRow + "," + newCol)) {
                                 bfsQueue.add(new Integer[]{newRow, newCol});
                             }
                         }

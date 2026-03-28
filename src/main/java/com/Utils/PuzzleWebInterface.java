@@ -15,6 +15,8 @@ import java.time.Duration;
 
 public abstract class PuzzleWebInterface<P> {
 
+    protected int lastGuessCount = 0;
+
     protected abstract PuzzleType getPuzzleType();
 
     protected abstract String getBoardSelector();
@@ -60,7 +62,15 @@ public abstract class PuzzleWebInterface<P> {
 
             setupAfterParse(actions);
 
+            long startTime = System.currentTimeMillis();
             task.accept(puzzle, actions, driver, recorder);
+            long solveTimeMs = System.currentTimeMillis() - startTime;
+
+            MetricsPublisher.publishSolveTime(getPuzzleType().name(), solveTimeMs);
+            if (lastGuessCount > 0) {
+                MetricsPublisher.publishGuessCount(getPuzzleType().name(), lastGuessCount);
+            }
+            MetadataWriter.appendEntry(getPuzzleType().name(), solveTimeMs, lastGuessCount);
         } finally {
             if (recorder != null) recorder.stopAndUpload();
             driver.quit();
