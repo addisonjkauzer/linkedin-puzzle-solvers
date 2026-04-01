@@ -82,7 +82,7 @@ public class ZipPuzzle {
         if (board[row][col] == nextNode) {
             nextNode++;
         }
-        if (enableOptimizations && (!allNodesConnectable(nextNode, seen) || numBlankIslands(seen, nextNode) > 1)) {
+        if (enableOptimizations && (!allNodesConnectable(nextNode, seen) || numBlankIslands(seen, nextNode) > 1 || hasDeadEndPath(seen, row, col))) {
             return;
         }
         path.add(new Integer[]{row, col});
@@ -151,7 +151,7 @@ public class ZipPuzzle {
                                 continue;
                             }
                             int newValue = board[newRow][newCol];
-                            if ((value == 0 || value >= nextNode) && !seen[newRow][newCol] && !currentPath.contains(newRow + "," + newCol)) {
+                            if ((newValue == 0 || newValue >= nextNode) && !seen[newRow][newCol] && !currentPath.contains(newRow + "," + newCol)) {
                                 bfsQueue.add(new Integer[]{newRow, newCol});
                             }
                         }
@@ -161,6 +161,28 @@ public class ZipPuzzle {
             }
         }
         return numIslands;
+    }
+
+    private boolean hasDeadEndPath(final Set<String> seen, int toBePlacedRow, int toBePlacedCol) {
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
+                if ((row == toBePlacedRow && col == toBePlacedCol) || seen.contains(row + "," + col) ||board[row][col] == maxNode) {
+                    continue;
+                }
+                int openSides = 4;
+                for (final int[] direction : DIRECTIONS) {
+                    int newRow = row + direction[0];
+                    int newCol = col + direction[1];
+                    if (newRow < 0 || newRow >= board.length || newCol < 0 || newCol >= board[0].length || seen.contains(newRow + "," + newCol)) {
+                        openSides--;
+                    }
+                }
+                if (openSides < 2) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean pathExists(final Integer[] currentLocation,

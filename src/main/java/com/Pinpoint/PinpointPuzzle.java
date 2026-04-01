@@ -26,7 +26,7 @@ public class PinpointPuzzle {
                 "\n * The category can be a word that can precede or follow every clue word. " +
                 "\n * These are the current clues: " + String.join(", ", clues) +
                 "\n * Respond with only a single category word. No explanation. " +
-                "\n * Do not guess these words: " + alreadyGuessed + ", " + String.join(", ", clues));
+                "\n * Do not guess these words: " + alreadyGuessed + ", " + String.join(", ", clues)).split(" ")[0].trim().toLowerCase();
         alreadyGuessed.add(guess);
         return guess;
     }

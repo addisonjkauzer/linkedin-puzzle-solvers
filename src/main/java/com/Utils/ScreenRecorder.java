@@ -8,7 +8,9 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ public class ScreenRecorder {
     private final WebDriver driver;
     private final Process ffmpeg;
     private final OutputStream ffmpegIn;
+    private final InputStream ffmpegErr;
 
     private ScreenRecorder(String puzzleType, WebDriver driver) throws IOException {
         this.puzzleType = puzzleType;
@@ -34,14 +37,15 @@ public class ScreenRecorder {
                 "ffmpeg", "-y",
                 "-f", "image2pipe", "-vcodec", "png", "-r", "20",
                 "-i", "pipe:0",
+                "-vf", "crop=trunc(iw/2)*2:trunc(ih/2)*2",
                 "-vcodec", "libx264", "-pix_fmt", "yuv420p",
                 "-preset", "ultrafast",
                 outputFile.toString()
-        ).redirectError(ProcessBuilder.Redirect.DISCARD)
-         .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+        ).redirectOutput(ProcessBuilder.Redirect.DISCARD)
          .start();
 
         this.ffmpegIn = ffmpeg.getOutputStream();
+        this.ffmpegErr = ffmpeg.getErrorStream();
     }
 
     public static ScreenRecorder start(String puzzleType, WebDriver driver) throws IOException {
@@ -86,9 +90,21 @@ public class ScreenRecorder {
     public void stopAndUpload() {
         try {
             ffmpegIn.close();
+        } catch (Exception e) {
+            System.err.println("Failed to close ffmpeg stdin for " + puzzleType + ": " + e.getMessage());
+        }
+        try {
             ffmpeg.waitFor();
         } catch (Exception e) {
-            System.err.println("Failed to finalize ffmpeg for " + puzzleType + ": " + e.getMessage());
+            System.err.println("Failed to wait for ffmpeg for " + puzzleType + ": " + e.getMessage());
+        }
+        try {
+            String stderr = new String(ffmpegErr.readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println("ffmpeg exit code: " + ffmpeg.exitValue());
+            System.out.println("ffmpeg output file size: " + Files.size(outputFile) + " bytes");
+            if (!stderr.isBlank()) System.out.println("ffmpeg stderr:\n" + stderr);
+        } catch (Exception e) {
+            System.err.println("Failed to read ffmpeg stderr: " + e.getMessage());
         }
         try {
             String key = "recordings/" + puzzleType.toLowerCase() + "/" + LocalDate.now(ZoneId.of("America/Los_Angeles")) + ".mp4";

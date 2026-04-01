@@ -17,7 +17,13 @@ public class LambdaHandler {
 
     public static void main(String[] args) throws Exception {
         String event = System.getProperty("LAMBDA_EVENT", "");
-        String puzzle = parsePuzzleType(event);
+        JsonNode node = new ObjectMapper().readTree(event);
+
+        if (node.path("warmup").asBoolean(false)) {
+            return;
+        }
+
+        String puzzle = node.get("puzzle").asText();
 
         switch (puzzle.toUpperCase()) {
             case "ZIP"      -> new ZipPuzzleWebInterface(new ZipPuzzleParser()).visualizeAlgorithm(true, true);
@@ -29,8 +35,4 @@ public class LambdaHandler {
         }
     }
 
-    private static String parsePuzzleType(String event) throws Exception {
-        JsonNode node = new ObjectMapper().readTree(event);
-        return node.get("puzzle").asText();
-    }
 }

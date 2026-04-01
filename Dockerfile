@@ -24,6 +24,8 @@ RUN dnf install -y java-25-amazon-corretto-devel
 RUN dnf install -y \
     wget \
     unzip \
+    tar \
+    xz \
     alsa-lib \
     atk \
     at-spi2-atk \
@@ -40,8 +42,11 @@ RUN dnf install -y \
     nss \
     nspr \
     pango \
-    libXt \
-    ffmpeg
+    libXt
+
+# Install ffmpeg from static build (not available in AL2023 default repos)
+RUN curl -L https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz \
+    | tar -xJ --strip-components=2 -C /usr/local/bin --wildcards '*/bin/ffmpeg' '*/bin/ffprobe'
 
 # Install Google Chrome stable and matching ChromeDriver
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm \
