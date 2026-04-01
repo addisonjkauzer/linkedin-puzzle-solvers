@@ -1,15 +1,15 @@
 package com;
 
-import com.Pinpoint.PinpointPuzzleParser;
-import com.Pinpoint.PinpointPuzzleWebInterface;
-import com.Queens.QueensPuzzleParser;
-import com.Queens.QueensPuzzleWebInterface;
-import com.Sudoku.SudokuPuzzleParser;
-import com.Sudoku.SudokuPuzzleWebInterface;
-import com.Tango.TangoPuzzleParser;
-import com.Tango.TangoPuzzleWebInterface;
-import com.Zip.ZipPuzzleParser;
-import com.Zip.ZipPuzzleWebInterface;
+import com.pinpoint.PinpointPuzzleParser;
+import com.pinpoint.PinpointPuzzleWebInterface;
+import com.queens.QueensPuzzleParser;
+import com.queens.QueensPuzzleWebInterface;
+import com.sudoku.SudokuPuzzleParser;
+import com.sudoku.SudokuPuzzleWebInterface;
+import com.tango.TangoPuzzleParser;
+import com.tango.TangoPuzzleWebInterface;
+import com.zip.ZipPuzzleParser;
+import com.zip.ZipPuzzleWebInterface;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

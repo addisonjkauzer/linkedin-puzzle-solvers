@@ -45,24 +45,24 @@ Tests are the primary entry point. Each E2E test opens Chrome, navigates to the 
 
 ```bash
 # Zip
-./gradlew test --tests "com.Zip.ZipPuzzleE2ETest.solvePuzzle"
-./gradlew test --tests "com.Zip.ZipPuzzleE2ETest.visualizeAlgorithm"
-./gradlew test --tests "com.Zip.ZipPuzzleE2ETest.visualizeMultiThreadAlgorithm"
+./gradlew test --tests "com.zip.ZipPuzzleE2ETest.solvePuzzle"
+./gradlew test --tests "com.zip.ZipPuzzleE2ETest.visualizeAlgorithm"
+./gradlew test --tests "com.zip.ZipPuzzleE2ETest.visualizeMultiThreadAlgorithm"
 
 # Sudoku
-./gradlew test --tests "com.Sudoku.SudokuPuzzleE2ETest.solvePuzzle"
-./gradlew test --tests "com.Sudoku.SudokuPuzzleE2ETest.visualizeAlgorithm"
+./gradlew test --tests "com.sudoku.SudokuPuzzleE2ETest.solvePuzzle"
+./gradlew test --tests "com.sudoku.SudokuPuzzleE2ETest.visualizeAlgorithm"
 
 # Tango
-./gradlew test --tests "com.Tango.TangoPuzzleE2ETest.solvePuzzle"
-./gradlew test --tests "com.Tango.TangoPuzzleE2ETest.visualizeAlgorithm"
+./gradlew test --tests "com.tango.TangoPuzzleE2ETest.solvePuzzle"
+./gradlew test --tests "com.tango.TangoPuzzleE2ETest.visualizeAlgorithm"
 
 # Queens
-./gradlew test --tests "com.Queens.QueensPuzzleE2ETest.solvePuzzle"
-./gradlew test --tests "com.Queens.QueensPuzzleE2ETest.visualizeAlgorithm"
+./gradlew test --tests "com.queens.QueensPuzzleE2ETest.solvePuzzle"
+./gradlew test --tests "com.queens.QueensPuzzleE2ETest.visualizeAlgorithm"
 
 # Pinpoint
-./gradlew test --tests "com.Pinpoint.PinpointPuzzleE2ETest.visualizeAlgorithm"
+./gradlew test --tests "com.pinpoint.PinpointPuzzleE2ETest.visualizeAlgorithm"
 ```
 
 ## How It Works
