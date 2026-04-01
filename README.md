@@ -95,7 +95,3 @@ docker build -t linkedin-puzzle-solvers .
 - AWS SDK (S3, CloudWatch)
 - Lombok
 - JUnit 5
-
-## Disclaimer
-I started this project with the sole intention of having fun coming up with algorithms and optimizations to solving these puzzles. To this end, the code to solve the puzzle after it's been converted to a 2d array is completely my own.
-The remaining code to pull the puzzle and input the solution is brought to you by Claude Code
