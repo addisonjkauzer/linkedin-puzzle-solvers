@@ -4,6 +4,10 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
+import software.amazon.awssdk.services.cloudfront.CloudFrontClient;
+import software.amazon.awssdk.services.cloudfront.model.CreateInvalidationRequest;
+import software.amazon.awssdk.services.cloudfront.model.InvalidationBatch;
+import software.amazon.awssdk.services.cloudfront.model.Paths;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -19,7 +23,9 @@ import java.time.ZoneId;
 public class ScreenRecorder {
 
     private static final S3Client s3Client = S3Client.create();
+    private static final CloudFrontClient cloudFrontClient = CloudFrontClient.create();
     private static final String BUCKET = System.getenv("RECORDINGS_BUCKET");
+    private static final String CLOUDFRONT_DISTRIBUTION_ID = System.getenv("CLOUDFRONT_DISTRIBUTION_ID");
 
     private final String puzzleType;
     private final Path outputFile;
@@ -63,6 +69,25 @@ public class ScreenRecorder {
             // Session may have expired; skip this frame
         } catch (IOException e) {
             // ffmpeg pipe closed; skip
+        }
+    }
+
+    private void invalidateCloudFrontCache(String path) {
+        if (CLOUDFRONT_DISTRIBUTION_ID == null || CLOUDFRONT_DISTRIBUTION_ID.isBlank()) {
+            System.out.println("No CLOUDFRONT_DISTRIBUTION_ID set, skipping invalidation");
+            return;
+        }
+        try {
+            cloudFrontClient.createInvalidation(CreateInvalidationRequest.builder()
+                    .distributionId(CLOUDFRONT_DISTRIBUTION_ID)
+                    .invalidationBatch(InvalidationBatch.builder()
+                            .callerReference(puzzleType + "-" + System.currentTimeMillis())
+                            .paths(Paths.builder().quantity(1).items(path).build())
+                            .build())
+                    .build());
+            System.out.println("CloudFront invalidation created for " + path);
+        } catch (Exception e) {
+            System.err.println("Failed to invalidate CloudFront cache for " + path + ": " + e.getMessage());
         }
     }
 
@@ -117,6 +142,7 @@ public class ScreenRecorder {
                     outputFile
             );
             System.out.println("Recording uploaded to s3://" + BUCKET + "/" + key);
+            invalidateCloudFrontCache("/" + key);
         } catch (Exception e) {
             System.err.println("Failed to upload recording for " + puzzleType + ": " + e.getMessage());
         } finally {
