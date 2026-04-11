@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -87,8 +89,19 @@ public class ZipPuzzle {
         }
         path.add(new Integer[]{row, col});
         seen.add(seenKey);
+
+        final PriorityQueue<Integer[]> nextMoves = new PriorityQueue<>(Comparator.comparing(a -> a[2]));
+
         for (int[] direction : DIRECTIONS) {
-            final Integer[] newLocation = new Integer[]{row + direction[0], col + direction[1]};
+            final Integer newRow = row + direction[0];
+            final Integer newCol = col + direction[1];
+            final Integer[] nextNodeLocation = nodeLocations.getOrDefault(nextNode, new Integer[]{0, 0});
+            final Integer distance = Math.abs(newRow - nextNodeLocation[0]) + Math.abs(newCol - nextNodeLocation[1]);
+            nextMoves.add(new Integer[]{newRow, newCol, distance});
+        }
+
+        for (final Integer[] locationAndDistance : nextMoves) {
+            final Integer[] newLocation = new Integer[]{locationAndDistance[0], locationAndDistance[1]};
             final String newLocationKey = newLocation[0] + "," + newLocation[1];
             if (bannedMoves.getOrDefault(seenKey, new HashSet<>()).contains(newLocationKey)) {
                 continue;
