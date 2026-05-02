@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,10 +32,18 @@ public class ZipPuzzle {
 
     private final int maxNode;
 
-    private final HashMap<Integer, Set<String>> cachedPaths = new HashMap<>();
+    private final ConcurrentHashMap<Integer, Set<String>> cachedPaths = new ConcurrentHashMap<>();
 
     private final AtomicInteger cacheHits = new AtomicInteger(0);
     private final AtomicInteger cacheMisses = new AtomicInteger(0);
+
+    private final AtomicInteger dfsCallCount = new AtomicInteger(0);
+    private final java.util.concurrent.atomic.AtomicLong allNodesConnectableMs = new java.util.concurrent.atomic.AtomicLong(0);
+    private final AtomicInteger allNodesConnectablePrunes = new AtomicInteger(0);
+    private final java.util.concurrent.atomic.AtomicLong numBlankIslandsMs = new java.util.concurrent.atomic.AtomicLong(0);
+    private final AtomicInteger numBlankIslandsPrunes = new AtomicInteger(0);
+    private final java.util.concurrent.atomic.AtomicLong hasDeadEndPathMs = new java.util.concurrent.atomic.AtomicLong(0);
+    private final AtomicInteger hasDeadEndPathPrunes = new AtomicInteger(0);
 
     private final static int[][] DIRECTIONS = new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
@@ -68,6 +77,15 @@ public class ZipPuzzle {
         if (!solution.isEmpty()) {
             return;
         }
+        final int calls = dfsCallCount.incrementAndGet();
+        if (calls % 10_000 == 0) {
+            System.out.printf("[ZIP] DFS calls=%,d | allNodesConnectable: %,dms (%,d prunes) | numBlankIslands: %,dms (%,d prunes) | hasDeadEndPath: %,dms (%,d prunes) | cacheHits=%,d cacheMisses=%,d%n",
+                    calls,
+                    allNodesConnectableMs.get(), allNodesConnectablePrunes.get(),
+                    numBlankIslandsMs.get(), numBlankIslandsPrunes.get(),
+                    hasDeadEndPathMs.get(), hasDeadEndPathPrunes.get(),
+                    cacheHits.get(), cacheMisses.get());
+        }
         if (path.size() == board.length * board[0].length) {
             solution.addAll(path);
             return;
@@ -84,8 +102,30 @@ public class ZipPuzzle {
         if (board[row][col] == nextNode) {
             nextNode++;
         }
-        if (enableOptimizations && (!allNodesConnectable(nextNode, seen) || numBlankIslands(seen, nextNode) > 1 || hasDeadEndPath(seen, row, col))) {
-            return;
+        if (enableOptimizations) {
+            long t0 = System.currentTimeMillis();
+            boolean deadEnd = hasDeadEndPath(seen, row, col);
+            hasDeadEndPathMs.addAndGet(System.currentTimeMillis() - t0);
+            if (deadEnd) {
+                hasDeadEndPathPrunes.incrementAndGet();
+                return;
+            }
+
+            t0 = System.currentTimeMillis();
+            boolean multipleIslands = numBlankIslands(seen, nextNode) > 1;
+            numBlankIslandsMs.addAndGet(System.currentTimeMillis() - t0);
+            if (multipleIslands) {
+                numBlankIslandsPrunes.incrementAndGet();
+                return;
+            }
+
+            t0 = System.currentTimeMillis();
+            boolean connectable = allNodesConnectable(nextNode, seen);
+            allNodesConnectableMs.addAndGet(System.currentTimeMillis() - t0);
+            if (!connectable) {
+                allNodesConnectablePrunes.incrementAndGet();
+                return;
+            }
         }
         path.add(new Integer[]{row, col});
         seen.add(seenKey);
@@ -157,10 +197,12 @@ public class ZipPuzzle {
                     while (!bfsQueue.isEmpty()) {
                         final Integer[] current = bfsQueue.poll();
                         seen[current[0]][current[1]] = true;
+                        final String currentKey = current[0] + "," + current[1];
                         for (int[] direction : DIRECTIONS) {
                             int newRow = current[0] + direction[0];
                             int newCol = current[1] + direction[1];
-                            if (newRow < 0 || newRow >= board.length || newCol < 0 || newCol >= board[0].length) {
+                            final String newLocationKey = newRow + "," + newCol;
+                            if (newRow < 0 || newRow >= board.length || newCol < 0 || newCol >= board[0].length || bannedMoves.getOrDefault(currentKey, new HashSet<>()).contains(newLocationKey)) {
                                 continue;
                             }
                             int newValue = board[newRow][newCol];
@@ -183,10 +225,14 @@ public class ZipPuzzle {
                     continue;
                 }
                 int openSides = 4;
+                final String cellKey = row + "," + col;
                 for (final int[] direction : DIRECTIONS) {
                     int newRow = row + direction[0];
                     int newCol = col + direction[1];
-                    if (newRow < 0 || newRow >= board.length || newCol < 0 || newCol >= board[0].length || seen.contains(newRow + "," + newCol)) {
+                    final String neighborKey = newRow + "," + newCol;
+                    if (newRow < 0 || newRow >= board.length || newCol < 0 || newCol >= board[0].length
+                            || seen.contains(neighborKey)
+                            || bannedMoves.getOrDefault(cellKey, new HashSet<>()).contains(neighborKey)) {
                         openSides--;
                     }
                 }

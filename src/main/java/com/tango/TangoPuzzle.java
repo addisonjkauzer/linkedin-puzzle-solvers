@@ -141,12 +141,14 @@ public class TangoPuzzle {
                             continue;
                         }
                     }
-                    if (remainingSunRow[row] == 0 || remainingSunCol[col] == 0) {
-                        submitCell(row, col, MOON, onCellVisited);
+                    int defaultFromCol = checkRemainingCol(col);
+                    if (defaultFromCol != 0) {
+                        submitCell(row, col, defaultFromCol, onCellVisited);
                         continue;
                     }
-                    if (remainingMoonRow[row] == 0 || remainingMoonCol[col] == 0) {
-                        submitCell(row, col, SUN, onCellVisited);
+                    int defaultFromRow = checkRemainingRow(row);
+                    if (defaultFromRow != 0) {
+                        submitCell(row, col, defaultFromRow, onCellVisited);
                         continue;
                     }
 
@@ -163,6 +165,64 @@ public class TangoPuzzle {
 
     private String constraintKey(int r1, int c1, int r2, int c2) {
         return r1 + "," + c1 + "-" + r2 + "," + c2;
+    }
+
+    private int checkRemainingCol(int col) {
+        int remainingSun = 3;
+        int remainingMoon = 3;
+        for (int row = 0; row < board.length; row++) {
+            if (board[row][col] == SUN) {
+                remainingSun--;
+            } else if (board[row][col] == MOON) {
+                remainingMoon--;
+            } else {
+                int downNeighbor = (row + 1) % board.length;
+                String constraintKeyDown = constraintKey(row, col, downNeighbor, col);
+                if (board[downNeighbor][col] == 0 && constraints.containsKey(constraintKeyDown)) {
+                    if (OPPOSITE.equals(constraints.get(constraintKeyDown))) {
+                        remainingSun--;
+                        remainingMoon--;
+                        row++;
+                    }
+                }
+            }
+        }
+        if (remainingSun == 0) {
+            return MOON;
+        } else if (remainingMoon == 0) {
+            return SUN;
+        } else {
+            return 0;
+        }
+    }
+
+    private int checkRemainingRow(int row) {
+        int remainingSun = 3;
+        int remainingMoon = 3;
+        for (int col = 0; col < board.length; col++) {
+            if (board[row][col] == SUN) {
+                remainingSun--;
+            } else if (board[row][col] == MOON) {
+                remainingMoon--;
+            } else {
+                int rightNeighbor = (col + 1) % board[row].length;
+                String constraintKeyRight = constraintKey(row, col, row, rightNeighbor);
+                if (board[row][rightNeighbor] == 0 && constraints.containsKey(constraintKeyRight)) {
+                    if (OPPOSITE.equals(constraints.get(constraintKeyRight))) {
+                        remainingSun--;
+                        remainingMoon--;
+                        col++;
+                    }
+                }
+            }
+        }
+        if (remainingSun == 0) {
+            return MOON;
+        } else if (remainingMoon == 0) {
+            return SUN;
+        } else {
+            return 0;
+        }
     }
 
 
